@@ -1,24 +1,88 @@
-import { useContext, useEffect, useState } from "react";
-import { useEmployees } from "./EmployeeContext";
+import { createContext, useContext, useEffect, useState } from "react";
+
+let initialEmployees = [
+  {
+    name: "Ronak Ameta",
+    age: "26",
+    designation: "Software Associate",
+    empID: "FUS-VA-1698",
+    id: "111",
+    image: `../public/profilepicture.webp`,
+  },
+  {
+    name: "Jay Sharma",
+    age: "23",
+    designation: "Software Intern",
+    empID: "FUS-VA-1556",
+    id: "222",
+    image: `male.jpg`,
+  },
+  {
+    name: "Pankaj Sen",
+    age: "28",
+    designation: "Senior Associate",
+    empID: "FUS-VA-1887",
+    id: "333",
+    // image: `https://i.pravatar.cc/150?=dfgdf`,
+    image: `../public/profilepicture.webp`,
+  },
+  {
+    name: "Suman Mehta",
+    age: "21",
+    designation: "Software Associate",
+    empID: "FUS-VA-1995",
+    id: "444",
+    // image: `https://i.pravatar.cc/150?=d`,
+    image: `../public/profilepicture.webp`,
+  },
+];
+
+const EmpContext = createContext();
 
 export default function App() {
-  const { selectedEmployee } = useEmployees();
+  const [employees, setEmployees] = useState(initialEmployees);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+
+  function handleAddNewEmp(newEmployee) {
+    setEmployees((employees) => [...employees, newEmployee]);
+  }
+
+  function handleSelectEmployee(employee) {
+    // employees.filter((employee) => employee.id === friend.id);
+    setSelectedEmployee(employee);
+  }
+
+  // console.log(employees);
   return (
-    <>
-      <Header />
-      <div className="container">
-        <div className="sub-container">
-          <NewEmployeeForm />
+    <EmpContext.Provider
+      value={{
+        employees,
+        setEmployees,
+        onAddNewEmp: handleAddNewEmp,
+        selectedEmployee,
+        setSelectedEmployee,
+        onSelectEmployee: handleSelectEmployee,
+      }}
+    >
+      <>
+        <Header />
+        <div className="container">
+          <div className="sub-container">
+            <NewEmployeeForm onAddNewEmp={handleAddNewEmp} />
+          </div>
+          {selectedEmployee && <UpdateEmployeeForm />}
+          <EmployeeList
+            employees={employees}
+            onSelectEmployee={handleSelectEmployee}
+          />
         </div>
-        {selectedEmployee && <UpdateEmployeeForm />}
-        <EmployeeList />
-      </div>
-    </>
+      </>
+    </EmpContext.Provider>
   );
 }
 
 function Header() {
-  const { employees, setEmployees } = useEmployees();
+  const { employees, setEmployees } = useContext(EmpContext);
 
   const [searchValue, setSearchValue] = useState("");
 
@@ -49,7 +113,7 @@ function Header() {
 }
 
 function NewEmployeeForm() {
-  const { onAddNewEmp } = useEmployees();
+  const { onAddNewEmp } = useContext(EmpContext);
 
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
@@ -118,7 +182,7 @@ function Input({ children, value, onChange, placeholder }) {
 }
 
 function EmployeeList() {
-  const { employees } = useEmployees();
+  const { employees } = useContext(EmpContext);
 
   return (
     <div className="employeecard-container">
@@ -130,13 +194,13 @@ function EmployeeList() {
 }
 
 function EmployeeCard({ employee }) {
-  const { onSelectEmployee } = useEmployees();
+  const { onSelectEmployee } = useContext(EmpContext);
   return (
     <div className="card">
       <div className="img-container">
         <img
           className="emp-img"
-          src="https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="
+          src="profilepicture.webp"
           alt={employee.name}
         ></img>
       </div>
@@ -153,7 +217,7 @@ function EmployeeCard({ employee }) {
 
 function UpdateEmployeeForm() {
   const { selectedEmployee, setSelectedEmployee, setEmployees } =
-    useEmployees();
+    useContext(EmpContext);
 
   const [updatedName, setUpdatedName] = useState(selectedEmployee.name);
   const [updatedAge, setUpdatedAge] = useState(selectedEmployee.age);
